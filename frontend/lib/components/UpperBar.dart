@@ -16,7 +16,9 @@ class _HeaderState extends State<Header> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
             icon: const Icon(
               Icons.menu,
               color: Colors.white,
