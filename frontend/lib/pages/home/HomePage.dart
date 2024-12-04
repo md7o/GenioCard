@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/components/UpperBar.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
+import 'package:genio_card/provider/ThemeProvider.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
 bool _isSwitched = false; // Initially, the switch is off
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
@@ -64,11 +67,11 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pop(context);
                 },
                 trailing: Switch(
-                  value: _isSwitched,
+                  value: isDarkMode,
                   onChanged: (bool value) {
                     setState(
                       () {
-                        _isSwitched = value; // Update the switch state
+                        ref.read(themeProvider.notifier).state = value;
                       },
                     );
                   },

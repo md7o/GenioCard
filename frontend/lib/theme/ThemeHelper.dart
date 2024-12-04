@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:genio_card/theme/CustomColors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:genio_card/theme/CustomColors.dart'; // Assuming AppColors is imported from here
 
 class ThemeHelper {
   static Color getCardColor(BuildContext context) {
