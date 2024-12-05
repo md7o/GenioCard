@@ -12,8 +12,6 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-bool _isSwitched = false; // Initially, the switch is off
-
 class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {

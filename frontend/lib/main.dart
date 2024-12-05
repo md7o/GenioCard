@@ -19,9 +19,9 @@ class MyApp extends ConsumerWidget {
     final isDarkMode = ref.watch(themeProvider);
     return MaterialApp(
       title: 'Flutter App',
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light, // Set the theme mode
-      darkTheme: ThemeData.dark(), // Dark theme
-      theme: ThemeData.light(), // Light theme
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      darkTheme: ThemeData.dark(),
+      theme: ThemeData.light(),
       home: const HomePage(),
     );
   }
