@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:genio_card/theme/CustomColors.dart';
+import 'package:genio_card/theme/ThemeHelper.dart';
 
 class Header extends StatefulWidget {
   const Header({super.key});
@@ -29,13 +29,16 @@ class _HeaderState extends State<Header> {
             child: Padding(
               padding: const EdgeInsets.only(right: 12, left: 8),
               child: TextField(
+                style: TextStyle(
+                  color: ThemeHelper.getTextColor(context),
+                ),
                 decoration: InputDecoration(
                   hintText: 'Search your section',
                   hintStyle: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.lightSecondaryTextColor : AppColors.darkSecondaryTextColor,
+                    color: ThemeHelper.getSecondaryTextColor(context),
                   ),
                   filled: true,
-                  fillColor: Theme.of(context).brightness == Brightness.dark ? AppColors.lightCardColor : AppColors.darkCardColor,
+                  fillColor: ThemeHelper.getCardColor(context),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
                 ),

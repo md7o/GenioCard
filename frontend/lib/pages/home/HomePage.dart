@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/components/UpperBar.dart';
+import 'package:genio_card/pages/generate_file_widget/GenerateFilePage.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
+import 'package:genio_card/utils/PageNavigator.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -45,8 +47,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
               onTap: () {
-                // Handle navigation to Home
-                Navigator.pop(context);
+                PageNavigator(context, const GenerateFilePage());
               },
             ),
             ListTile(
@@ -113,7 +114,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           onSelected: (int result) {
             switch (result) {
               case 0:
-                // Handle Upload File
+                PageNavigator(context, const GenerateFilePage());
                 break;
             }
           },
