@@ -24,59 +24,58 @@ class _HomePageState extends ConsumerState<HomePage> {
           Header(),
         ],
       ),
-      drawer: Expanded(
-        child: Drawer(
-          backgroundColor: ThemeHelper.getBackgroundColor(context),
-          child: ListView(
-            children: <Widget>[
-              const Text(
-                "LOGO",
-                style: TextStyle(color: Colors.white, fontSize: 20),
+      drawer: Drawer(
+        backgroundColor: ThemeHelper.getBackgroundColor(context),
+        child: ListView(
+          children: <Widget>[
+            Image.asset(
+              "assets/images/GenioCardLogo.png",
+              height: 50,
+            ),
+            const SizedBox(height: 10),
+            ListTile(
+              leading: Icon(
+                Icons.attach_file,
+                color: ThemeHelper.getTextColor(context),
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.attach_file,
+              title: Text(
+                'Upload File',
+                style: TextStyle(
                   color: ThemeHelper.getTextColor(context),
                 ),
-                title: Text(
-                  'Upload File',
-                  style: TextStyle(
-                    color: ThemeHelper.getTextColor(context),
-                  ),
-                ),
-                onTap: () {
-                  // Handle navigation to Home
-                  Navigator.pop(context);
-                },
               ),
-              ListTile(
-                leading: Icon(
-                  Icons.dark_mode_outlined,
+              onTap: () {
+                // Handle navigation to Home
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.dark_mode_outlined,
+                color: ThemeHelper.getTextColor(context),
+              ),
+              title: Text(
+                'Settings',
+                style: TextStyle(
                   color: ThemeHelper.getTextColor(context),
                 ),
-                title: Text(
-                  'Settings',
-                  style: TextStyle(
-                    color: ThemeHelper.getTextColor(context),
-                  ),
-                ),
-                onTap: () {
-                  // Handle navigation to Settings
-                  Navigator.pop(context);
-                },
-                trailing: Switch(
-                  value: isDarkMode,
-                  onChanged: (bool value) {
-                    setState(
-                      () {
-                        ref.read(themeProvider.notifier).state = value;
-                      },
-                    );
-                  },
-                ),
               ),
-            ],
-          ),
+              onTap: () {
+                // Handle navigation to Settings
+                Navigator.pop(context);
+              },
+              trailing: Switch(
+                value: isDarkMode,
+                onChanged: (bool value) {
+                  setState(
+                    () {
+                      ref.read(themeProvider.notifier).state = value;
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
       body: Column(
@@ -94,15 +93,51 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        elevation: 0,
+        onPressed: null, // Disable default action
         backgroundColor: ThemeHelper.getCardColor(context),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50),
         ),
-        child: Icon(
-          Icons.add_rounded,
-          size: 40,
-          color: Theme.of(context).brightness == Brightness.dark ? AppColors.lightSecondaryTextColor : AppColors.darkTextColor,
+        child: PopupMenuButton<int>(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          icon: Icon(
+            Icons.add_rounded,
+            size: 40,
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.lightSecondaryTextColor : AppColors.darkTextColor,
+          ),
+          color: ThemeHelper.getCardColor(context),
+          offset: const Offset(65, 5), // Adjust vertical offset to appear above
+          onSelected: (int result) {
+            switch (result) {
+              case 0:
+                // Handle Upload File
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+            PopupMenuItem<int>(
+              height: 5,
+              value: 0,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.attach_file,
+                    color: ThemeHelper.getTextColor(context),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Upload File',
+                    style: TextStyle(
+                      color: ThemeHelper.getTextColor(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
