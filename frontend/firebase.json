@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"genio-card","appId":"1:29367289435:android:5cca595295b62d09c3217e","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"genio-card","configurations":{"android":"1:29367289435:android:5cca595295b62d09c3217e","ios":"1:29367289435:ios:8eba6aac6c3ac191c3217e"}}}}}}

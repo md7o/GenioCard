@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/DropDownButton.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class GenerateFilePage extends ConsumerStatefulWidget {
   const GenerateFilePage({super.key});
@@ -18,6 +21,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
   String selectedDifficulty = "Simple";
 
   String? filePath;
+  List<String>? questions;
 
   Future<void> pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -29,6 +33,45 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       setState(() {
         filePath = result.files.single.path;
       });
+    }
+  }
+
+  Future<void> createQuestions() async {
+    if (filePath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a PDF file first.")),
+      );
+      return;
+    }
+
+    File file = File(filePath!);
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://10.0.2.2:3000/upload-pdf'),
+    );
+    request.files.add(await http.MultipartFile.fromPath('pdfFile', file.path));
+
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      var responseData = await response.stream.bytesToString();
+      var jsonResponse = json.decode(responseData) as Map<String, dynamic>;
+
+      if (mounted) {
+        setState(() {
+          questions = List<String>.from(jsonResponse['questions']); // Update questions
+        });
+
+        FirebaseFirestore.instance.collection('user_questions').add({
+          'questions': questions,
+          'createdAt': Timestamp.now(),
+        });
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to generate questions.")),
+        );
+      }
     }
   }
 
@@ -183,6 +226,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
               ],
             ),
             GestureDetector(
+              onTap: createQuestions,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: Container(
@@ -206,6 +250,27 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            if (questions != null) ...[
+              const Text(
+                "Generated Questions:",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: questions!.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(
+                      questions![index],
+                      style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                    ),
+                  );
+                },
+              ),
+            ],
           ],
         ),
       ),

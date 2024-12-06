@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "29367289435",
+    "project_id": "genio-card",
+    "storage_bucket": "genio-card.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:29367289435:android:5cca595295b62d09c3217e",
+        "android_client_info": {
+          "package_name": "com.genio.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDKczuOA1nXvaBGyuMI1edR0Db5Js-Z3k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
