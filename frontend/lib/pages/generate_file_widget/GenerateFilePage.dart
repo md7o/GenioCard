@@ -75,6 +75,24 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
     }
   }
 
+  Future<List<String>> fetchQuestions() async {
+    final snapshot = await FirebaseFirestore.instance.collection("user_questions").get();
+    return snapshot.docs.map((doc) => List<String>.from(doc["questions"])).expand((q) => q).toList();
+  }
+
+  Future<void> loadQuestionsFromFirestore() async {
+    try {
+      final fetchedQuestions = await fetchQuestions();
+      setState(() {
+        questions = fetchedQuestions;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching questions: $e")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +114,12 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             color: ThemeHelper.getSecondaryTextColor(context),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: ThemeHelper.getTextColor(context)),
+            onPressed: loadQuestionsFromFirestore, // Fetch questions from Firestore
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -250,22 +274,22 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
             if (questions != null) ...[
-              const Text(
-                "Generated Questions:",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: questions!.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(
-                      questions![index],
-                      style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                    title: Container(
+                      decoration: BoxDecoration(color: ThemeHelper.getCardColor(context), borderRadius: BorderRadius.circular(10)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          questions![index],
+                          style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                        ),
+                      ),
                     ),
                   );
                 },
