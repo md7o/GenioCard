@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/components/UpperBar.dart';
 import 'package:genio_card/pages/generate_file_widget/GenerateFilePage.dart';
+import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
 import 'package:genio_card/utils/PageNavigator.dart';
+import 'package:hive/hive.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -18,6 +20,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(themeProvider);
+    final questions = ref.watch(questionsProvider);
+
+    // Check if there are questions, if not show the fallback message
+    final isQuestionsData = questions.isNotEmpty;
+
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
@@ -62,7 +69,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
               onTap: () {
-                // Handle navigation to Settings
                 Navigator.pop(context);
               },
               trailing: Switch(
@@ -71,6 +77,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   setState(
                     () {
                       ref.read(themeProvider.notifier).state = value;
+                      Hive.box('localBox').put('isDarkMode', value);
                     },
                   );
                 },
@@ -79,20 +86,50 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: Text(
-              "All section will appear here",
-              style: TextStyle(
-                color: ThemeHelper.getSecondaryTextColor(context),
-                fontSize: 20,
-              ),
+      body: isQuestionsData
+          ? ListView.builder(
+              itemCount: questions.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Container(
+                    decoration: BoxDecoration(
+                      color: ThemeHelper.getCardColor(context),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Q: ${questions[index]['question']}",
+                            style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                          ),
+                          Text(
+                            "A: ${questions[index]['answer']}",
+                            style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: Text(
+                    "All section will appear here",
+                    style: TextStyle(
+                      color: ThemeHelper.getSecondaryTextColor(context),
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         elevation: 0,
         onPressed: null, // Disable default action

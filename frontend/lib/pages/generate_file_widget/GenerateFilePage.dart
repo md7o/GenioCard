@@ -3,7 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
+import 'package:genio_card/pages/home/HomePage.dart';
 import 'package:genio_card/pages/questions/Questions_page.dart';
+import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -21,6 +23,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
   String selectedDifficulty = "Simple";
 
   String? filePath;
+  bool isLoading = false;
   final TextEditingController numQuestionsController = TextEditingController();
 
   Future<void> pickPdf() async {
@@ -44,7 +47,11 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       return;
     }
 
-    String numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text; // Default to 5 if empty
+    setState(() {
+      isLoading = true;
+    });
+
+    String numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text;
     String language = selectedLanguage;
     String difficulty = selectedDifficulty;
 
@@ -76,11 +83,13 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             }),
           );
 
-          // Navigate to QuestionsPage with fetched questions
-          Navigator.push(
+          ref.read(questionsProvider.notifier).state = fetchedQuestions;
+
+          // Now navigate after updating the provider
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => QuestionsPage(questions: fetchedQuestions),
+              builder: (context) => HomePage(),
             ),
           );
         } catch (e) {
@@ -101,6 +110,10 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error creating questions: $e")),
       );
+    } finally {
+      setState(() {
+        isLoading = false; // Set loading to false when the process is complete
+      });
     }
   }
 
@@ -252,13 +265,19 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 ),
               ],
             ),
+            if (isLoading)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
             GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await createQuestions(context);
+                await CircularNotchedRectangle();
+
+                Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => LoadingPage()),
+                  MaterialPageRoute(builder: (context) => HomePage()),
                 );
-                createQuestions(context);
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
