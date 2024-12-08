@@ -35,6 +35,7 @@ app.post(
   async (req: Request, res: Response) => {
     try {
       const file = req.file;
+      const { numQuestions, language, difficulty } = req.body;
 
       if (!file) {
         return res.status(400).send({ error: "No file uploaded" });
@@ -46,17 +47,45 @@ app.post(
       const pdfText = pdfData.text;
 
       // Use Genkit to generate questions from the text
-      const { text: questions } = await ai.generate(
-        `Create questions from the following text:\n\n${pdfText}`
-      );
-      const questionsList = questions.split("\n").filter((q) => q.trim());
+      const { text: qaPairs } = await ai.generate(`
+        Analyze the following text and create a JSON array with questions and answers. Use the parameters provided:
+        - Number of questions: ${numQuestions}
+        - Language: ${language}
+        - Difficulty: ${difficulty}
+        
+        Input:
+        ${pdfText}
+        Output:
+        [
+          { "question": "Question 1?", "answer": "Answer 1." },
+          { "question": "Question 2?", "answer": "Answer 2." }
+        ]
+      `);
+
+      if (!qaPairs) {
+        return res
+          .status(500)
+          .send({ error: "Failed to generate questions from the AI." });
+      }
+
+      // Sanitize response
+      const sanitizedResponse = qaPairs.replace(/```json|```/g, "").trim();
+
+      // Parse the JSON response
+      let questionsWithAnswers;
+      try {
+        questionsWithAnswers = JSON.parse(sanitizedResponse);
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        return res.status(500).send({ error: "Invalid format in AI response" });
+      }
 
       // Save questions to Firestore
       const questionsRef = firestore.collection("questions").doc();
-      await questionsRef.set({ questions: questionsList });
+      await questionsRef.set({ questions: questionsWithAnswers });
 
       // Send response back to the client
-      res.status(200).send({ questions: questionsList });
+      res.status(200).send({ questions: questionsWithAnswers });
     } catch (error) {
       console.error("Error processing file:", error);
       res
@@ -66,87 +95,7 @@ app.post(
   }
 );
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-// // import the Genkit and Google AI plugin libraries
-// import { gemini15Flash, googleAI } from "@genkit-ai/googleai";
-// import { genkit } from "genkit";
-// import dotenv from "dotenv";
-
-// // Load the API key from environment variables
-// dotenv.config();
-
-// // configure a Genkit instance
-// const ai = genkit({
-//   plugins: [googleAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY })], // Pass the API key
-//   model: gemini15Flash, // Set the model
-// });
-
-// (async () => {
-//   // make a generation request
-//   const { text } = await ai.generate("Say hi to ayman");
-//   console.log(text);
-// })();
-
-// ============================================================================
-
-// const express = require("express");
-// import { Request, Response } from "express";
-// import multer from "multer";
-// import fs from "fs";
-// import pdfParse from "pdf-parse";
-
-// const app = express();
-// const port = 3000;
-
-// // Setup multer for handling file uploads
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/"); // Folder where PDFs will be stored
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, Date.now() + "-" + file.originalname); // Unique filename
-//   },
-// });
-
-// const upload = multer({ storage: storage });
-
-// // Route to handle PDF upload and text extraction
-// app.post(
-//   "/upload-pdf",
-//   upload.single("pdfFile"),
-//   async (req: Request, res: Response) => {
-//     if (!req.file) {
-//       return res.status(400).send("No file uploaded");
-//     }
-
-//     try {
-//       const pdfBuffer = fs.readFileSync(req.file.path);
-//       const data = await pdfParse(pdfBuffer);
-
-//       // Here, you can generate questions from the extracted text
-//       const questions = generateQuestionsFromText(data.text);
-
-//       // Respond with generated questions
-//       res.json({ questions });
-//     } catch (err) {
-//       console.error("Error extracting PDF content:", err);
-//       res.status(500).send("Failed to extract PDF content");
-//     }
-//   }
-// );
-
-// // Function to generate questions from the PDF text (example)
-// function generateQuestionsFromText(text: string): string[] {
-//   // Implement your question generation logic here
-//   // For simplicity, just split the text into sentences
-//   return text.split(".").map((sentence) => `What is: ${sentence.trim()}?`);
-// }
-
-// app.listen(port, () => {
-//   console.log(`Server running on http://localhost:${port}`);
-// });

@@ -1,13 +1,13 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/DropDownButton.dart';
+import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
+import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:genio_card/pages/questions/questions_widget/LoadingPage.dart';
 
 class GenerateFilePage extends ConsumerStatefulWidget {
   const GenerateFilePage({super.key});
@@ -21,7 +21,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
   String selectedDifficulty = "Simple";
 
   String? filePath;
-  List<String>? questions;
+  final TextEditingController numQuestionsController = TextEditingController();
 
   Future<void> pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -36,7 +36,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
     }
   }
 
-  Future<void> createQuestions() async {
+  Future<void> createQuestions(BuildContext context) async {
     if (filePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a PDF file first.")),
@@ -44,51 +44,62 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       return;
     }
 
+    String numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text; // Default to 5 if empty
+    String language = selectedLanguage;
+    String difficulty = selectedDifficulty;
+
     File file = File(filePath!);
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://10.0.2.2:3000/upload-pdf'),
     );
+
+    request.fields['numQuestions'] = numQuestions;
+    request.fields['language'] = language;
+    request.fields['difficulty'] = difficulty;
+
     request.files.add(await http.MultipartFile.fromPath('pdfFile', file.path));
 
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      var responseData = await response.stream.bytesToString();
-      var jsonResponse = json.decode(responseData) as Map<String, dynamic>;
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonResponse = json.decode(responseData) as Map<String, dynamic>;
 
-      if (mounted) {
-        setState(() {
-          questions = List<String>.from(jsonResponse['questions']); // Update questions
-        });
+        try {
+          List<Map<String, String>> fetchedQuestions = List<Map<String, String>>.from(
+            jsonResponse['questions'].map((questionData) {
+              return {
+                'question': questionData['question'] as String,
+                'answer': questionData['answer'] as String,
+              };
+            }),
+          );
 
-        FirebaseFirestore.instance.collection('user_questions').add({
-          'questions': questions,
-          'createdAt': Timestamp.now(),
-        });
-      }
-    } else {
-      if (mounted) {
+          // Navigate to QuestionsPage with fetched questions
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuestionsPage(questions: fetchedQuestions),
+            ),
+          );
+        } catch (e) {
+          print("Error during casting or updating state: $e");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error processing questions: $e")),
+          );
+        }
+      } else {
+        // Handle non-200 responses from the server
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to generate questions.")),
+          SnackBar(content: Text("Failed to generate questions. Server error: ${response.statusCode}")),
         );
       }
-    }
-  }
-
-  Future<List<String>> fetchQuestions() async {
-    final snapshot = await FirebaseFirestore.instance.collection("user_questions").get();
-    return snapshot.docs.map((doc) => List<String>.from(doc["questions"])).expand((q) => q).toList();
-  }
-
-  Future<void> loadQuestionsFromFirestore() async {
-    try {
-      final fetchedQuestions = await fetchQuestions();
-      setState(() {
-        questions = fetchedQuestions;
-      });
     } catch (e) {
+      // Handle network or other errors
+      print("Error during request: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching questions: $e")),
+        SnackBar(content: Text("Error creating questions: $e")),
       );
     }
   }
@@ -114,12 +125,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             color: ThemeHelper.getSecondaryTextColor(context),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: ThemeHelper.getTextColor(context)),
-            onPressed: loadQuestionsFromFirestore, // Fetch questions from Firestore
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -197,6 +202,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                   child: TextField(
+                    controller: numQuestionsController,
                     style: TextStyle(
                       color: ThemeHelper.getTextColor(context),
                     ),
@@ -210,9 +216,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                     ),
-                    onChanged: (value) {
-                      print(value);
-                    },
                   ),
                 ),
                 CustomDropdown<String>(
@@ -250,7 +253,13 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
               ],
             ),
             GestureDetector(
-              onTap: createQuestions,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoadingPage()),
+                );
+                createQuestions(context);
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
                 child: Container(
@@ -274,27 +283,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 ),
               ),
             ),
-            if (questions != null) ...[
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: questions!.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Container(
-                      decoration: BoxDecoration(color: ThemeHelper.getCardColor(context), borderRadius: BorderRadius.circular(10)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          questions![index],
-                          style: TextStyle(color: ThemeHelper.getTextColor(context)),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
           ],
         ),
       ),

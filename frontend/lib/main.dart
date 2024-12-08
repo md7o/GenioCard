@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/firebase_options.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
+import 'package:genio_card/pages/questions/questions_widget/LoadingPage.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -30,7 +31,7 @@ class MyApp extends ConsumerWidget {
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       darkTheme: ThemeData.dark(), // Dark theme
       theme: ThemeData.light(), // Light theme
-      home: const HomePage(),
+      home: LoadingPage(),
     );
   }
 }
