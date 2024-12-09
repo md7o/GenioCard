@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/components/UpperBar.dart';
 import 'package:genio_card/pages/generate_file_widget/GenerateFilePage.dart';
+import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
@@ -21,6 +22,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(themeProvider);
     final questions = ref.watch(questionsProvider);
+
+    final numQuestions = ref.watch(numQuestionsProvider);
+    final language = ref.watch(languageProvider);
+    final difficulty = ref.watch(difficultyProvider);
 
     // Check if there are questions, if not show the fallback message
     final isQuestionsData = questions.isNotEmpty;
@@ -87,34 +92,87 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
       ),
       body: isQuestionsData
-          ? ListView.builder(
-              itemCount: questions.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Container(
+          ? GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const QuestionsPage(question: {}),
+                  ),
+                );
+              },
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: ThemeHelper.getCardColor(context),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "Q: ${questions[index]['question']}",
-                            style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Section 1",
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  color: ThemeHelper.getTextColor(context),
+                                ),
+                              ),
+                              Text(
+                                "Questions: $numQuestions",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                ),
+                              ),
+                              Text(
+                                "Language: $language",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                ),
+                              ),
+                              Text(
+                                "Difficulty: $difficulty",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            "A: ${questions[index]['answer']}",
-                            style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context)),
+                          Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                color: ThemeHelper.getSquareCardColor(context),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                                child: Text(
+                                  "PDF",
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w400,
+                                    color: ThemeHelper.getSecondaryTextColor(context),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                );
-              },
+                ],
+              ),
             )
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,

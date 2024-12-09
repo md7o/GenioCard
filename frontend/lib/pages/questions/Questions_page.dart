@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 
-class QuestionsPage extends StatelessWidget {
-  final List<Map<String, String>> questions;
-
-  const QuestionsPage({super.key, required this.questions});
+class QuestionsPage extends ConsumerStatefulWidget {
+  const QuestionsPage({super.key, required question});
 
   @override
+  ConsumerState<QuestionsPage> createState() => _QuestionsPageState();
+}
+
+class _QuestionsPageState extends ConsumerState<QuestionsPage> {
+  @override
   Widget build(BuildContext context) {
+    final questions = ref.watch(questionsProvider);
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
@@ -15,6 +21,15 @@ class QuestionsPage extends StatelessWidget {
         title: const Text(
           "Questions",
           style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: ThemeHelper.getTextColor(context),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: ListView.builder(

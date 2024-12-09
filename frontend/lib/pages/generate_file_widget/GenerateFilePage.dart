@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
-import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:genio_card/pages/questions/questions_widget/LoadingPage.dart';
 
 class GenerateFilePage extends ConsumerStatefulWidget {
   const GenerateFilePage({super.key});
@@ -51,9 +49,13 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       isLoading = true;
     });
 
-    String numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text;
-    String language = selectedLanguage;
-    String difficulty = selectedDifficulty;
+    //  final numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text;
+    //   String language = selectedLanguage;
+    //   String difficulty = selectedDifficulty;
+
+    String numQuestions = ref.read(numQuestionsProvider);
+    String language = ref.read(languageProvider);
+    String difficulty = ref.read(difficultyProvider);
 
     File file = File(filePath!);
     var request = http.MultipartRequest(
@@ -85,7 +87,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
 
           ref.read(questionsProvider.notifier).state = fetchedQuestions;
 
-          // Now navigate after updating the provider
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -166,7 +167,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             GestureDetector(
               onTap: pickPdf,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   gradient: const LinearGradient(
@@ -212,24 +213,41 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                  child: TextField(
-                    controller: numQuestionsController,
-                    style: TextStyle(
-                      color: ThemeHelper.getTextColor(context),
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Number',
-                      labelStyle: TextStyle(
-                        color: ThemeHelper.getSecondaryTextColor(context),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                //   child: TextField(
+                //     controller: numQuestionsController,
+                //     style: TextStyle(
+                //       color: ThemeHelper.getTextColor(context),
+                //     ),
+                //     decoration: InputDecoration(
+                //       labelText: 'Number',
+                //       labelStyle: TextStyle(
+                //         color: ThemeHelper.getSecondaryTextColor(context),
+                //       ),
+                //       filled: true,
+                //       fillColor: ThemeHelper.getCardColor(context),
+                //       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                //       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                //     ),
+                //   ),
+                // ),
+                CustomDropdown<String>(
+                  label: 'Select Number',
+                  items: List.generate(
+                    15,
+                    (index) => DropdownMenuItem(
+                      value: (index + 1).toString(), // Values from 1 to 15
+                      child: Text(
+                        (index + 1).toString(),
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      filled: true,
-                      fillColor: ThemeHelper.getCardColor(context),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                     ),
                   ),
+                  initialValue: ref.watch(numQuestionsProvider),
+                  onChanged: (value) {
+                    ref.read(numQuestionsProvider.notifier).state = value!;
+                  },
                 ),
                 CustomDropdown<String>(
                   label: 'Language',
@@ -243,7 +261,10 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                       child: Text('Arabic', style: TextStyle(color: Colors.white)),
                     ),
                   ],
-                  initialValue: selectedLanguage,
+                  initialValue: ref.watch(languageProvider),
+                  onChanged: (value) {
+                    ref.read(languageProvider.notifier).state = value!;
+                  },
                 ),
                 CustomDropdown<String>(
                   label: 'Questions Difficulty',
@@ -261,7 +282,10 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                       child: Text('Complicated', style: TextStyle(color: Colors.white)),
                     ),
                   ],
-                  initialValue: selectedDifficulty,
+                  initialValue: ref.watch(difficultyProvider),
+                  onChanged: (value) {
+                    ref.read(difficultyProvider.notifier).state = value!;
+                  },
                 ),
               ],
             ),
@@ -272,11 +296,11 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             GestureDetector(
               onTap: () async {
                 await createQuestions(context);
-                await CircularNotchedRectangle();
+                const CircularNotchedRectangle();
 
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
+                  MaterialPageRoute(builder: (context) => const HomePage()),
                 );
               },
               child: Padding(

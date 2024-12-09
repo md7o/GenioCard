@@ -57,9 +57,12 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                 value: selectedValue,
                 items: widget.items,
                 onChanged: (value) {
-                  setState(() {
-                    selectedValue = value!;
-                  });
+                  if (value != null) {
+                    setState(() {
+                      selectedValue = value;
+                    });
+                    widget.onChanged?.call(value);
+                  }
                 },
                 dropdownColor: ThemeHelper.getSquareCardColor(context),
                 borderRadius: BorderRadius.circular(10),
