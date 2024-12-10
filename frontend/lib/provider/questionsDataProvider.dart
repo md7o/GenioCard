@@ -12,6 +12,6 @@ class QuestionNotifier extends StateNotifier<List<Map<String, String>>> {
   }
 }
 
-final numQuestionsProvider = StateProvider<String>((ref) => '5'); // Default value
+final numQuestionsProvider = StateProvider<String>((ref) => '1'); // Default value
 final languageProvider = StateProvider<String>((ref) => 'English'); // Default value
 final difficultyProvider = StateProvider<String>((ref) => 'Simple'); // Default value

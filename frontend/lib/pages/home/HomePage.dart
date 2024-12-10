@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/components/UpperBar.dart';
 import 'package:genio_card/pages/generate_file_widget/GenerateFilePage.dart';
 import 'package:genio_card/pages/questions/Questions_page.dart';
+import 'package:genio_card/provider/UserNameProvider.dart';
 import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
@@ -23,12 +24,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     final isDarkMode = ref.watch(themeProvider);
     final questions = ref.watch(questionsProvider);
 
+    final isQuestionsData = questions.isNotEmpty;
+
     final numQuestions = ref.watch(numQuestionsProvider);
     final language = ref.watch(languageProvider);
     final difficulty = ref.watch(difficultyProvider);
 
-    // Check if there are questions, if not show the fallback message
-    final isQuestionsData = questions.isNotEmpty;
+    final username = ref.watch(usernameProvider);
 
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
@@ -184,6 +186,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       color: ThemeHelper.getSecondaryTextColor(context),
                       fontSize: 20,
                     ),
+                  ),
+                ),
+                Text(
+                  'Hello, ${username ?? "Guest"}!',
+                  style: TextStyle(
+                    color: ThemeHelper.getSecondaryTextColor(context),
+                    fontSize: 20,
                   ),
                 ),
               ],

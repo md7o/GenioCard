@@ -19,9 +19,9 @@ class _HeaderState extends State<Header> {
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.menu,
-              color: Colors.white,
+              color: ThemeHelper.getTextColor(context),
               size: 30,
             ),
           ),

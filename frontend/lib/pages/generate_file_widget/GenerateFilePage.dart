@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
@@ -22,7 +24,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
 
   String? filePath;
   bool isLoading = false;
-  final TextEditingController numQuestionsController = TextEditingController();
 
   Future<void> pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -84,6 +85,26 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
               };
             }),
           );
+
+          final user = FirebaseAuth.instance.currentUser;
+          if (user == null) throw Exception("No authenticated user found");
+
+          final batch = FirebaseFirestore.instance.batch();
+          final questionsCollection = FirebaseFirestore.instance.collection('questions');
+
+          for (var question in fetchedQuestions) {
+            final questionRef = questionsCollection.doc();
+            batch.set(questionRef, {
+              'question': question['question'],
+              'answer': question['answer'],
+              'creatorId': user.uid,
+              'createdAt': DateTime.now(),
+              'language': language,
+              'difficulty': difficulty,
+            });
+          }
+
+          await batch.commit();
 
           ref.read(questionsProvider.notifier).state = fetchedQuestions;
 
@@ -203,16 +224,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text(
-                    "Number of Questions",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: ThemeHelper.getSecondaryTextColor(context),
-                    ),
-                  ),
-                ),
+
                 // Padding(
                 //   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                 //   child: TextField(
@@ -233,7 +245,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                 //   ),
                 // ),
                 CustomDropdown<String>(
-                  label: 'Select Number',
+                  label: 'Select Number of Questions',
                   items: List.generate(
                     15,
                     (index) => DropdownMenuItem(
