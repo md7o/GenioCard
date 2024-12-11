@@ -8,7 +8,7 @@ class QuestionNotifier extends StateNotifier<List<Map<String, String>>> {
   QuestionNotifier() : super([]);
 
   void setQuestions(List<Map<String, String>> questions) {
-    state = questions;
+    questions;
   }
 }
 

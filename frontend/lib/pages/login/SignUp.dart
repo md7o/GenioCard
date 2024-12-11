@@ -16,7 +16,6 @@ class SignUp extends ConsumerStatefulWidget {
 }
 
 class _SignUpState extends ConsumerState<SignUp> {
-  @override
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -25,8 +24,7 @@ class _SignUpState extends ConsumerState<SignUp> {
 
   void signUp(String email, String password, String username, BuildContext context) async {
     try {
-      // Create a new user with Firebase Authentication
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
       // Save user data to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
@@ -37,7 +35,6 @@ class _SignUpState extends ConsumerState<SignUp> {
 
       ref.read(usernameProvider.notifier).state = username;
 
-      // Navigate to the HomePage (or any other page)
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -50,6 +47,7 @@ class _SignUpState extends ConsumerState<SignUp> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
