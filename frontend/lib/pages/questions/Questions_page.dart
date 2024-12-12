@@ -1,27 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 
-class QuestionsPage extends ConsumerStatefulWidget {
-  const QuestionsPage({super.key, required question});
+class QuestionsPage extends StatelessWidget {
+  final List<Map<String, dynamic>> questions; // List of questions, adjust type as needed
 
-  @override
-  ConsumerState<QuestionsPage> createState() => _QuestionsPageState();
-}
+  const QuestionsPage({super.key, required this.questions});
 
-class _QuestionsPageState extends ConsumerState<QuestionsPage> {
   @override
   Widget build(BuildContext context) {
-    final questions = ref.watch(questionsProvider);
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
-          "Questions",
-          style: TextStyle(color: Colors.white),
-        ),
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
@@ -31,31 +21,37 @@ class _QuestionsPageState extends ConsumerState<QuestionsPage> {
             Navigator.pop(context);
           },
         ),
+        title: Text(
+          'File Generator',
+          style: TextStyle(
+            color: ThemeHelper.getSecondaryTextColor(context),
+          ),
+        ),
       ),
       body: ListView.builder(
         itemCount: questions.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Container(
-              decoration: BoxDecoration(
-                color: ThemeHelper.getCardColor(context),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Text(
-                      "Q: ${questions[index]['question']}",
-                      style: TextStyle(color: ThemeHelper.getTextColor(context)),
-                    ),
-                    Text(
-                      "A: ${questions[index]['answer']}",
-                      style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context)),
-                    ),
-                  ],
-                ),
+          var question = questions[index]; // Get each question
+
+          return Container(
+            decoration: BoxDecoration(
+              color: ThemeHelper.getCardColor(context),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    "Q: ${question['question']}",
+                    style: TextStyle(color: ThemeHelper.getTextColor(context)),
+                  ),
+                  Text(
+                    "A: ${question['answer']}",
+                    style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context)),
+                  ),
+                ],
               ),
             ),
           );

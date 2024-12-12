@@ -24,20 +24,8 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  List<Map<String, dynamic>> questions = [];
   late Future<void> _authCheckFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _authCheckFuture = _checkAuthState();
-  }
-
-  Future<void> _checkAuthState() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await _fetchUsernameAndNavigate(user.uid);
-    }
-  }
 
   Future<void> _fetchUsernameAndNavigate(String uid) async {
     try {
@@ -53,15 +41,68 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
+  Future<void> fetchQuestions(String userId) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('questions').where('userId', isEqualTo: userId).get();
+
+      // List to hold sections with their associated questions
+      List<Map<String, dynamic>> fetchedSections = [];
+
+      for (var doc in querySnapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+
+        if (data.containsKey('section') &&
+            data['section'] is Map<String, dynamic> &&
+            (data['section'] as Map<String, dynamic>).containsKey('quest') &&
+            data['section']['quest'] is List) {
+          List<dynamic> questionList = data['section']['quest'];
+          Timestamp? createdAtTimestamp = data['createdAt'] as Timestamp?;
+
+          // Add the section data and its questions to the list
+          fetchedSections.add({
+            'numQuestions': data['numQuestions'] ?? 'Unknown',
+            'language': data['language'] ?? 'Unknown',
+            'difficulty': data['difficulty'] ?? 'Unknown',
+            'createdAt': createdAtTimestamp != null ? createdAtTimestamp.toDate().toIso8601String() : 'Unknown',
+            'questions': questionList.map<Map<String, String>>((q) {
+              return {
+                'question': q['question']?.toString() ?? '',
+                'answer': q['answer']?.toString() ?? '',
+              };
+            }).toList(),
+          });
+        }
+      }
+
+      // Update the state with the fetched sections
+      setState(() {
+        questions = fetchedSections; // Ensure sections is List<Map<String, dynamic>>
+      });
+
+      print("Fetched Sections: $questions");
+    } catch (e) {
+      print("Error fetching sections: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _authCheckFuture = _checkAuthState();
+  }
+
+  Future<void> _checkAuthState() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _fetchUsernameAndNavigate(user.uid);
+      await fetchQuestions(user.uid);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(themeProvider);
-    final questions = ref.watch(questionsProvider);
-    final isQuestionsData = questions.isNotEmpty;
-
-    final numQuestions = ref.watch(numQuestionsProvider);
-    final language = ref.watch(languageProvider);
-    final difficulty = ref.watch(difficultyProvider);
+    final questData = ref.watch(questionsProvider);
 
     final username = ref.watch(usernameProvider);
 
@@ -71,13 +112,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             backgroundColor: ThemeHelper.getBackgroundColor(context),
-            body: Container(
-              color: Colors.black54,
-              child: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: ThemeHelper.getTextColor(context),
-                  size: 50,
-                ),
+            body: Center(
+              child: LoadingAnimationWidget.staggeredDotsWave(
+                color: ThemeHelper.getTextColor(context),
+                size: 50,
               ),
             ),
           );
@@ -210,88 +248,108 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
-            body: isQuestionsData
-                ? GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const QuestionsPage(question: {}),
-                        ),
-                      );
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: ThemeHelper.getCardColor(context),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Section 1",
-                                      style: TextStyle(
-                                        fontSize: 25,
-                                        color: ThemeHelper.getTextColor(context),
-                                      ),
-                                    ),
-                                    Text(
-                                      "Questions: $numQuestions",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: ThemeHelper.getSecondaryTextColor(context),
-                                      ),
-                                    ),
-                                    Text(
-                                      "Language: $language",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: ThemeHelper.getSecondaryTextColor(context),
-                                      ),
-                                    ),
-                                    Text(
-                                      "Difficulty: $difficulty",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: ThemeHelper.getSecondaryTextColor(context),
-                                      ),
-                                    ),
-                                  ],
+            body: questions.isNotEmpty
+                ? Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: questions.length, // Adjust based on actual number of questions
+                          itemBuilder: (context, index) {
+                            var questsData = questions[index];
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QuestionsPage(questions: questions[index]['questions']),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: ThemeHelper.getCardColor(context),
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
-                                Center(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      color: ThemeHelper.getSquareCardColor(context),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-                                      child: Text(
-                                        "PDF",
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w400,
-                                          color: ThemeHelper.getSecondaryTextColor(context),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Section Information
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Section 1",
+                                              style: TextStyle(
+                                                fontSize: 25,
+                                                color: ThemeHelper.getTextColor(context),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              "Questions: ${questsData["numQuestions"]}",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: ThemeHelper.getSecondaryTextColor(context),
+                                              ),
+                                            ),
+                                            Text(
+                                              "Language: ${questsData["language"]}",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: ThemeHelper.getSecondaryTextColor(context),
+                                              ),
+                                            ),
+                                            Text(
+                                              "Difficulty: ${questsData["difficulty"]}",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: ThemeHelper.getSecondaryTextColor(context),
+                                              ),
+                                            ),
+                                            Text(
+                                              "date: ${questsData["createdAt"]}",
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: ThemeHelper.getSecondaryTextColor(context),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 10), // Space between text section and PDF button
+                                      // PDF Button Section
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(15),
+                                          color: ThemeHelper.getSquareCardColor(context),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                                          child: Text(
+                                            "PDF",
+                                            style: TextStyle(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.w400,
+                                              color: ThemeHelper.getSecondaryTextColor(context),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   )
                 : username.isNotEmpty
                     ? Column(

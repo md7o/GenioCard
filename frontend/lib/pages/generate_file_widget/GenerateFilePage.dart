@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
+import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:http/http.dart' as http;
@@ -19,9 +20,6 @@ class GenerateFilePage extends ConsumerStatefulWidget {
 }
 
 class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
-  String selectedLanguage = "English";
-  String selectedDifficulty = "Simple";
-
   String? filePath;
   bool isLoading = false;
 
@@ -50,13 +48,22 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       isLoading = true;
     });
 
-    //  final numQuestions = numQuestionsController.text.isEmpty ? '5' : numQuestionsController.text;
-    //   String language = selectedLanguage;
-    //   String difficulty = selectedDifficulty;
-
     String numQuestions = ref.read(numQuestionsProvider);
     String language = ref.read(languageProvider);
     String difficulty = ref.read(difficultyProvider);
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User not logged in.")),
+      );
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    String userId = user.uid; // Get the user ID
 
     File file = File(filePath!);
     var request = http.MultipartRequest(
@@ -67,6 +74,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
     request.fields['numQuestions'] = numQuestions;
     request.fields['language'] = language;
     request.fields['difficulty'] = difficulty;
+    request.fields['userId'] = userId; // Include userId in the request
 
     request.files.add(await http.MultipartFile.fromPath('pdfFile', file.path));
 
@@ -86,26 +94,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
             }),
           );
 
-          final user = FirebaseAuth.instance.currentUser;
-          if (user == null) throw Exception("No authenticated user found");
-
-          final batch = FirebaseFirestore.instance.batch();
-          final questionsCollection = FirebaseFirestore.instance.collection('questions');
-
-          for (var question in fetchedQuestions) {
-            final questionRef = questionsCollection.doc();
-            batch.set(questionRef, {
-              'question': question['question'],
-              'answer': question['answer'],
-              'creatorId': user.uid,
-              'createdAt': DateTime.now(),
-              'language': language,
-              'difficulty': difficulty,
-            });
-          }
-
-          await batch.commit();
-
           ref.read(questionsProvider.notifier).state = fetchedQuestions;
 
           Navigator.pushReplacement(
@@ -121,13 +109,11 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
           );
         }
       } else {
-        // Handle non-200 responses from the server
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to generate questions. Server error: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      // Handle network or other errors
       print("Error during request: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error creating questions: $e")),

@@ -35,7 +35,7 @@ app.post(
   async (req: Request, res: Response) => {
     try {
       const file = req.file;
-      const { numQuestions, language, difficulty } = req.body;
+      const { numQuestions, language, difficulty, userId } = req.body;
 
       if (!file) {
         return res.status(400).send({ error: "No file uploaded" });
@@ -80,9 +80,18 @@ app.post(
         return res.status(500).send({ error: "Invalid format in AI response" });
       }
 
-      // Save questions to Firestore
+      // Save questions to Firestore and associate them with the user
       const questionsRef = firestore.collection("questions").doc();
-      await questionsRef.set({ questions: questionsWithAnswers });
+      await questionsRef.set({
+        section: {
+          quest: questionsWithAnswers, // Questions nested under section
+        },
+        numQuestions: numQuestions,
+        language: language,
+        difficulty: difficulty,
+        userId: userId,
+        createdAt: new Date(),
+      });
 
       // Send response back to the client
       res.status(200).send({ questions: questionsWithAnswers });
@@ -94,10 +103,6 @@ app.post(
     }
   }
 );
-
-app.get("/upload-pdf:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
