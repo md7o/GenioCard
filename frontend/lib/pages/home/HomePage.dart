@@ -8,12 +8,12 @@ import 'package:genio_card/pages/login/Login.dart';
 import 'package:genio_card/pages/login/SignUp.dart';
 import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/provider/UserNameProvider.dart';
-import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
 import 'package:genio_card/utils/PageNavigator.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -24,7 +24,9 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  List<Map<String, dynamic>> questions = [];
+  List<Map<String, dynamic>> quesAndAnsw = [];
+  List<Map<String, dynamic>> allQuestions = [];
+
   late Future<void> _authCheckFuture;
 
   Future<void> _fetchUsernameAndNavigate(String uid) async {
@@ -45,7 +47,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('questions').where('userId', isEqualTo: userId).get();
 
-      // List to hold sections with their associated questions
       List<Map<String, dynamic>> fetchedSections = [];
 
       for (var doc in querySnapshot.docs) {
@@ -58,12 +59,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           List<dynamic> questionList = data['section']['quest'];
           Timestamp? createdAtTimestamp = data['createdAt'] as Timestamp?;
 
-          // Add the section data and its questions to the list
           fetchedSections.add({
             'numQuestions': data['numQuestions'] ?? 'Unknown',
             'language': data['language'] ?? 'Unknown',
             'difficulty': data['difficulty'] ?? 'Unknown',
-            'createdAt': createdAtTimestamp != null ? createdAtTimestamp.toDate().toIso8601String() : 'Unknown',
+            'createdAt': createdAtTimestamp != null ? DateFormat('dd/MM/yy').format(createdAtTimestamp.toDate()) : 'Unknown',
             'questions': questionList.map<Map<String, String>>((q) {
               return {
                 'question': q['question']?.toString() ?? '',
@@ -74,12 +74,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         }
       }
 
-      // Update the state with the fetched sections
       setState(() {
-        questions = fetchedSections; // Ensure sections is List<Map<String, dynamic>>
+        quesAndAnsw = fetchedSections;
+        allQuestions = fetchedSections;
       });
-
-      print("Fetched Sections: $questions");
     } catch (e) {
       print("Error fetching sections: $e");
     }
@@ -102,8 +100,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(themeProvider);
-    final questData = ref.watch(questionsProvider);
-
     final username = ref.watch(usernameProvider);
 
     return FutureBuilder<void>(
@@ -248,30 +244,35 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
-            body: questions.isNotEmpty
+            body: allQuestions.isNotEmpty
                 ? Column(
                     children: [
                       Expanded(
                         child: ListView.builder(
-                          itemCount: questions.length, // Adjust based on actual number of questions
+                          itemCount: allQuestions.length, // Adjust based on actual number of questions
                           itemBuilder: (context, index) {
-                            var questsData = questions[index];
+                            var questsData = allQuestions[index];
 
                             return GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => QuestionsPage(questions: questions[index]['questions']),
+                                    builder: (context) {
+                                      return QuestionsPage(
+                                        quesAndAnsw: questsData['questions'],
+                                        allQuestions: allQuestions,
+                                      );
+                                    },
                                   ),
                                 );
                               },
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
                                   color: ThemeHelper.getCardColor(context),
-                                  borderRadius: BorderRadius.circular(15),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -284,7 +285,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Section 1",
+                                              "Section ${index + 1}",
                                               style: TextStyle(
                                                 fontSize: 25,
                                                 color: ThemeHelper.getTextColor(context),
