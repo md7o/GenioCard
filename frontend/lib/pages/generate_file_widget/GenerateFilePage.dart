@@ -128,7 +128,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
         });
       }
 
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 2));
       if (mounted && loadingDone) {
         Navigator.pushReplacement(
           context,
@@ -143,7 +143,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
     return Scaffold(
       backgroundColor: ThemeHelper.getBackgroundColor(context),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: isLoading || loadingDone ? Colors.black54 : Colors.transparent,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
@@ -156,7 +156,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
         title: Text(
           'File Generator',
           style: TextStyle(
-            color: ThemeHelper.getSecondaryTextColor(context),
+            color: ThemeHelper.getTextColor(context),
           ),
         ),
       ),
@@ -343,18 +343,15 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                   Center(
                     child: isLoading
                         ? LoadingAnimationWidget.staggeredDotsWave(
-                            color: ThemeHelper.getTextColor(context), // Red when loading, green when done
+                            color: Colors.white, // Red when loading, green when done
                             size: 50,
                           )
-                        : AnimatedCheck(),
+                        : const AnimatedCheck(),
                   ),
                   const SizedBox(height: 15),
                   Text(
-                    isLoading ? "Generating" : "Generating is complete",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: ThemeHelper.getTextColor(context),
-                    ),
+                    isLoading ? "Generating" : "Generating complete",
+                    style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
                   )
                 ],
               ),

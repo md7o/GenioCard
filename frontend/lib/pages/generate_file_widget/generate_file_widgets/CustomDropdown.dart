@@ -54,8 +54,19 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(
+                focusColor: ThemeHelper.getTextColor(context),
                 value: selectedValue,
-                items: widget.items,
+                items: widget.items.map((item) {
+                  return DropdownMenuItem<T>(
+                    value: item.value,
+                    child: Text(
+                      item.value.toString(),
+                      style: TextStyle(
+                        color: ThemeHelper.getTextColor(context),
+                      ),
+                    ),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() {

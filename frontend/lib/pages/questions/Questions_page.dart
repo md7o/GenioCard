@@ -57,7 +57,7 @@ class QuestionsPage extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: ThemeHelper.getCardColor(context),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -109,8 +109,8 @@ class QuestionsPage extends StatelessWidget {
                         constraints: const BoxConstraints(minHeight: 100),
                         decoration: BoxDecoration(
                           color: ThemeHelper.getCardColor(context),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white, width: 1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: ThemeHelper.getTextColor(context), width: 1),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(15),
@@ -136,8 +136,8 @@ class QuestionsPage extends StatelessWidget {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: ThemeHelper.getCardColor(context),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: ThemeHelper.getTextColor(context), width: 1),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(15),
@@ -147,12 +147,16 @@ class QuestionsPage extends StatelessWidget {
                             children: [
                               Text(
                                 "${question['answer']}",
-                                style: const TextStyle(color: Color(0xFFC1D5FB)),
+                                style: TextStyle(
+                                  color: ThemeHelper.getAnswerColor(context),
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Text(
                                 "Flip card to see the Question",
-                                style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context)),
+                                style: TextStyle(
+                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                ),
                               ),
                             ],
                           ),

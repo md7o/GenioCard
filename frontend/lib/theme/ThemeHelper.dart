@@ -23,6 +23,10 @@ class ThemeHelper {
   }
 
   static Color getFloatButtonColor(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark ? AppColors.lightFloatButtonColor : AppColors.DarkFloatButtonColor;
+    return Theme.of(context).brightness == Brightness.dark ? AppColors.lightFloatButtonColor : AppColors.darkFloatButtonColor;
+  }
+
+  static Color getAnswerColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? AppColors.lightAnswerColor : AppColors.darkAnswerColor;
   }
 }

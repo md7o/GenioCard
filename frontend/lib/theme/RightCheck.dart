@@ -45,8 +45,8 @@ class _AnimatedCheckState extends State<AnimatedCheck> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    double circleSize = 100;
-    double iconSize = 68;
+    double circleSize = 80;
+    double iconSize = 48;
 
     return AnimatedBuilder(
       animation: Listenable.merge([scaleController, checkController]),
