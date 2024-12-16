@@ -35,7 +35,8 @@ app.post(
   async (req: Request, res: Response) => {
     try {
       const file = req.file;
-      const { numQuestions, language, difficulty, userId } = req.body;
+      const { sectionTitle, numQuestions, language, difficulty, userId } =
+        req.body;
 
       if (!file) {
         return res.status(400).send({ error: "No file uploaded" });
@@ -86,6 +87,7 @@ app.post(
         section: {
           quest: questionsWithAnswers, // Questions nested under section
         },
+        sectionTitle: sectionTitle,
         numQuestions: numQuestions,
         language: language,
         difficulty: difficulty,

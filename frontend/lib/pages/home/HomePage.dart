@@ -8,7 +8,6 @@ import 'package:genio_card/pages/login/Login.dart';
 import 'package:genio_card/pages/login/SignUp.dart';
 import 'package:genio_card/pages/questions/Questions_page.dart';
 import 'package:genio_card/provider/UserNameProvider.dart';
-import 'package:genio_card/theme/CustomColors.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
 import 'package:genio_card/utils/PageNavigator.dart';
@@ -25,6 +24,9 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   List<Map<String, dynamic>> quesAndAnsw = [];
+  List<Map<String, dynamic>> language = [];
+  List<Map<String, dynamic>> numQuestions = [];
+  List<Map<String, dynamic>> difficulty = [];
   List<Map<String, dynamic>> allQuestions = [];
 
   late Future<void> _authCheckFuture;
@@ -60,6 +62,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           Timestamp? createdAtTimestamp = data['createdAt'] as Timestamp?;
 
           fetchedSections.add({
+            'docId': doc.id,
+            'sectionTitle': data['sectionTitle'] ?? 'Unknown',
             'numQuestions': data['numQuestions'] ?? 'Unknown',
             'language': data['language'] ?? 'Unknown',
             'difficulty': data['difficulty'] ?? 'Unknown',
@@ -76,6 +80,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
       setState(() {
         quesAndAnsw = fetchedSections;
+        numQuestions = fetchedSections;
+        language = fetchedSections;
+        difficulty = fetchedSections;
         allQuestions = fetchedSections;
       });
     } catch (e) {
@@ -249,7 +256,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     children: [
                       Expanded(
                         child: ListView.builder(
-                          itemCount: allQuestions.length, // Adjust based on actual number of questions
+                          itemCount: allQuestions.length,
+                          physics: const BouncingScrollPhysics(),
                           itemBuilder: (context, index) {
                             var questsData = allQuestions[index];
 
@@ -261,7 +269,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     builder: (context) {
                                       return QuestionsPage(
                                         quesAndAnsw: questsData['questions'],
-                                        allQuestions: allQuestions,
+                                        numQuestions: questsData['numQuestions'],
+                                        language: questsData['language'],
+                                        difficulty: questsData['difficulty'],
                                       );
                                     },
                                   ),
@@ -285,7 +295,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Section ${index + 1}",
+                                              "${questsData["sectionTitle"]}",
                                               style: TextStyle(
                                                 fontSize: 25,
                                                 color: ThemeHelper.getTextColor(context),
@@ -323,24 +333,66 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(width: 10), // Space between text section and PDF button
-                                      // PDF Button Section
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(15),
-                                          color: ThemeHelper.getSquareCardColor(context),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
-                                          child: Text(
-                                            "PDF",
-                                            style: TextStyle(
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w400,
-                                              color: ThemeHelper.getSecondaryTextColor(context),
+                                      const SizedBox(width: 10),
+                                      Column(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(10),
+                                              color: ThemeHelper.getSquareCardColor(context),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                                              child: Text(
+                                                "PDF",
+                                                style: TextStyle(
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.w400,
+                                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          const SizedBox(height: 10),
+                                          GestureDetector(
+                                            onTap: () async {
+                                              try {
+                                                String docId = questsData['docId'];
+                                                await FirebaseFirestore.instance.collection('questions').doc(docId).delete();
+
+                                                setState(() {
+                                                  allQuestions.removeAt(index);
+                                                });
+
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text("Section deleted successfully")),
+                                                );
+                                              } catch (e) {
+                                                print("Error deleting document: $e");
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text("Failed to delete section")),
+                                                );
+                                              }
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(5),
+                                                color: ThemeHelper.getSquareCardColor(context),
+                                              ),
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 2),
+                                                child: Text(
+                                                  "Delete",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: ThemeHelper.getSecondaryTextColor(context),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -387,7 +439,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {
+                            onTap: () async {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -406,9 +458,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
             floatingActionButton: username.isNotEmpty
                 ? FloatingActionButton(
-                    elevation: 0,
-                    onPressed: null, // Disable default action
-                    backgroundColor: ThemeHelper.getCardColor(context),
+                    onPressed: null,
+                    backgroundColor: ThemeHelper.getFloatButtonColor(context),
+                    elevation: 5,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
@@ -416,13 +468,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.add_rounded,
                         size: 40,
-                        color: Theme.of(context).brightness == Brightness.dark ? AppColors.lightSecondaryTextColor : AppColors.darkTextColor,
+                        color: Colors.white,
                       ),
                       color: ThemeHelper.getCardColor(context),
-                      offset: const Offset(65, 5), // Adjust vertical offset to appear above
+                      offset: const Offset(65, 5),
                       onSelected: (int result) {
                         switch (result) {
                           case 0:

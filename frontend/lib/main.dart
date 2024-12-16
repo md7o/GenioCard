@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/firebase_options.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
-import 'package:genio_card/pages/login/Login.dart';
-import 'package:genio_card/pages/login/SignUp.dart';
 import 'package:genio_card/provider/ThemeProvider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hive_flutter/hive_flutter.dart';
