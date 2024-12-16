@@ -337,17 +337,26 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
           if (isLoading || loadingDone)
             Container(
               color: Colors.black54,
-              child: Center(
-                child: isLoading
-                    ? LoadingAnimationWidget.staggeredDotsWave(
-                        color: ThemeHelper.getTextColor(context), // Red when loading, green when done
-                        size: 50,
-                      )
-                    : const RightCheckAnimation(
-                        size: 100.0,
-                        checkColor: Colors.green,
-                        backgroundColor: Colors.white,
-                      ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: isLoading
+                        ? LoadingAnimationWidget.staggeredDotsWave(
+                            color: ThemeHelper.getTextColor(context), // Red when loading, green when done
+                            size: 50,
+                          )
+                        : AnimatedCheck(),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    isLoading ? "Generating" : "Generating is complete",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: ThemeHelper.getTextColor(context),
+                    ),
+                  )
+                ],
               ),
             ),
         ],
