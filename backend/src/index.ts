@@ -81,7 +81,6 @@ app.post(
         return res.status(500).send({ error: "Invalid format in AI response" });
       }
 
-      // Save questions to Firestore and associate them with the user
       const questionsRef = firestore.collection("questions").doc();
       await questionsRef.set({
         section: {

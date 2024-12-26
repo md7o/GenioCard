@@ -48,7 +48,7 @@ class QuestionsPage extends StatelessWidget {
             padding: const EdgeInsets.only(left: 15, top: 10),
             child: Text(
               "Questions data",
-              style: TextStyle(color: ThemeHelper.getTextColor(context), fontSize: 20),
+              style: TextStyle(color: ThemeHelper.getTextColor(context), fontSize: 18),
             ),
           ),
           Padding(
@@ -83,7 +83,7 @@ class QuestionsPage extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 15, top: 10),
+            padding: const EdgeInsets.only(left: 15, top: 5),
             child: Text(
               "Questions",
               style: TextStyle(color: ThemeHelper.getTextColor(context), fontSize: 20),
@@ -117,9 +117,12 @@ class QuestionsPage extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "${index + 1}. ${question['question']}",
-                                style: TextStyle(color: ThemeHelper.getTextColor(context), fontSize: 16),
+                              Directionality(
+                                textDirection: language == "Arabic" ? TextDirection.rtl : TextDirection.ltr,
+                                child: Text(
+                                  "${index + 1}. ${question['question']}",
+                                  style: TextStyle(color: ThemeHelper.getTextColor(context), fontSize: 16),
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Text(

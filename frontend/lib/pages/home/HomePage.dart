@@ -151,7 +151,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Image.asset(
-                            "assets/images/GenioCardLogo.png",
+                            "assets/images/GenioCardLogoV2.png",
                             height: 50,
                           ),
                         ),
@@ -254,6 +254,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             body: allQuestions.isNotEmpty
                 ? Column(
                     children: [
+                      const SizedBox(height: 15),
                       Expanded(
                         child: ListView.builder(
                           itemCount: allQuestions.length,
@@ -278,7 +279,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 );
                               },
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
                                   color: ThemeHelper.getCardColor(context),
@@ -289,7 +290,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      // Section Information
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +297,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             Text(
                                               "${questsData["sectionTitle"]}",
                                               style: TextStyle(
-                                                fontSize: 25,
+                                                fontSize: 20,
                                                 color: ThemeHelper.getTextColor(context),
                                               ),
                                             ),
@@ -342,7 +342,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                               color: ThemeHelper.getSquareCardColor(context),
                                             ),
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+                                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
                                               child: Text(
                                                 "PDF",
                                                 style: TextStyle(
@@ -380,7 +380,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                 color: ThemeHelper.getSquareCardColor(context),
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 2),
+                                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 1),
                                                 child: Text(
                                                   "Delete",
                                                   style: TextStyle(
@@ -430,11 +430,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Center(
-                            child: Text(
-                              "You need to sign up to generate the file",
-                              style: TextStyle(
-                                color: ThemeHelper.getSecondaryTextColor(context),
-                                fontSize: 20,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              child: Text(
+                                "You need to sign up to generate the file",
+                                style: TextStyle(
+                                  color: ThemeHelper.getSecondaryTextColor(context),
+                                  fontSize: 20,
+                                ),
                               ),
                             ),
                           ),

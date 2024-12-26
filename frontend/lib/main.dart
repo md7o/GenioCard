@@ -31,10 +31,11 @@ class MyApp extends ConsumerWidget {
     final isDarkMode = ref.watch(themeProvider);
     return MaterialApp(
       title: 'Flutter App',
+      debugShowCheckedModeBanner: false,
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      darkTheme: ThemeData.dark(), // Dark theme
-      theme: ThemeData.light(), // Light theme
-      home: HomePage(),
+      darkTheme: ThemeData.dark(),
+      theme: ThemeData.light(),
+      home: const HomePage(),
     );
   }
 }

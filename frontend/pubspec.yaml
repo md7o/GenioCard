@@ -1,5 +1,5 @@
 name: genio_card
-description: "A new Flutter project."
+description: "A Genio Card Flutter App."
 
 publish_to: "none"
 
@@ -22,14 +22,30 @@ dependencies:
   hive_flutter: ^1.1.0
   firebase_auth: ^5.3.4
   loading_animation_widget: ^1.3.0
+  flutter_native_splash: ^2.4.3
   intl: ^0.20.1
   flutter_flip_card: ^0.0.6
+  flutter_launcher_icons: ^0.14.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^3.0.0
+
+flutter_native_splash:
+  image: assets/images/GenioCardLogoV3.png
+  android_12:
+    image: assets/images/GenioCardLogoV3.png
+  color: "#1B1C1D"
+  android: true
+  ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/GenioCardLogo.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true

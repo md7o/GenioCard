@@ -209,9 +209,12 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  filePath != null ? "Selected File: ${filePath!.split('/').last}" : "No File Selected",
-                  style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context), fontWeight: FontWeight.w600),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    filePath != null ? "Selected File: ${filePath!.split('/').last}" : "No File Selected",
+                    style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context), fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Column(
@@ -227,11 +230,11 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 5),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                       child: TextField(
-                        controller: sectionTitle,
+                        controller: sectionTitle..text = 'Section Title',
                         style: TextStyle(
                           color: ThemeHelper.getTextColor(context),
                         ),
