@@ -3,7 +3,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:genio_card/pages/generate_file_widget/generate_file_widgets/CustomDropdown.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
 import 'package:genio_card/provider/questionsDataProvider.dart';
 import 'package:genio_card/theme/RightCheck.dart';
@@ -12,6 +11,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+
+import 'generate_file_widgets/OptionForm.dart';
 
 class GenerateFilePage extends ConsumerStatefulWidget {
   const GenerateFilePage({super.key});
@@ -25,14 +26,13 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
   bool isLoading = false;
   bool loadingDone = false;
 
-  final TextEditingController sectionTitle = TextEditingController();
+  TextEditingController sectionTitleController = TextEditingController();
 
   Future<void> pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
-
     if (result != null) {
       setState(() {
         filePath = result.files.single.path;
@@ -41,7 +41,6 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
   }
 
   Future<void> createQuestions(BuildContext context) async {
-    // Ensure a file is selected
     if (filePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select a PDF file first.")),
@@ -59,8 +58,7 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
 
     try {
       // Prepare request data
-      // String sectionTitle = ref.read(sectionTitleProvider);
-      String sectionTitleValue = sectionTitle.text;
+      String sectionTitleValue = sectionTitleController.text;
       String numQuestions = ref.read(numQuestionsProvider);
       String language = ref.read(languageProvider);
       String difficulty = ref.read(difficultyProvider);
@@ -73,10 +71,9 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       String userId = user.uid;
       File file = File(filePath!);
 
-      // HTTP request setup
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:3000/upload-pdf'),
+        Uri.parse("http://10.0.2.2:3000/pdf/upload"),
       );
       request.fields.addAll({
         'sectionTitle': sectionTitleValue,
@@ -87,13 +84,18 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
       });
       request.files.add(await http.MultipartFile.fromPath('pdfFile', file.path));
 
+      print("Sending request with file: ${file.path}");
+
       // Send request
       var response = await request.send();
 
-      if (response.statusCode == 200) {
-        // Parse server response
+      // Check response status
+      if (response.statusCode == 201) {
         var responseData = await response.stream.bytesToString();
         var jsonResponse = json.decode(responseData) as Map<String, dynamic>;
+
+        // Debugging the response
+        print('Response data: $jsonResponse');
 
         List<Map<String, String>> fetchedQuestions = List<Map<String, String>>.from(
           jsonResponse['questions'].map((questionData) {
@@ -112,16 +114,16 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
           });
         }
       } else {
+        var responseBody = await response.stream.bytesToString();
+        print('Failed request body: $responseBody');
         throw Exception("Failed to generate questions. Server error: ${response.statusCode}");
       }
     } catch (e) {
-      // Handle errors
-      print("Error during request: $e");
+      print('Error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error creating questions: $e")),
       );
     } finally {
-      // Stop loading
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -217,96 +219,13 @@ class _GenerateFilePageState extends ConsumerState<GenerateFilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: Text(
-                        "Options",
-                        style: TextStyle(
-                          fontSize: 25,
-                          color: ThemeHelper.getTextColor(context),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: TextField(
-                        controller: sectionTitle..text = 'Section Title',
-                        style: TextStyle(
-                          color: ThemeHelper.getTextColor(context),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Section Title',
-                          hintStyle: TextStyle(
-                            color: ThemeHelper.getSecondaryTextColor(context),
-                          ),
-                          filled: true,
-                          fillColor: ThemeHelper.getCardColor(context),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                        ),
-                      ),
-                    ),
-                    CustomDropdown<String>(
-                      label: 'Select Number of Questions',
-                      items: List.generate(
-                        15,
-                        (index) => DropdownMenuItem(
-                          value: (index + 1).toString(),
-                          child: Text(
-                            (index + 1).toString(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      initialValue: ref.watch(numQuestionsProvider),
-                      onChanged: (value) {
-                        ref.read(numQuestionsProvider.notifier).state = value!;
-                      },
-                    ),
-                    CustomDropdown<String>(
-                      label: 'Language',
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'English',
-                          child: Text('English', style: TextStyle(color: Colors.white)),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Arabic',
-                          child: Text('Arabic', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                      initialValue: ref.watch(languageProvider),
-                      onChanged: (value) {
-                        ref.read(languageProvider.notifier).state = value!;
-                      },
-                    ),
-                    CustomDropdown<String>(
-                      label: 'Questions Difficulty',
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'Simple',
-                          child: Text('Simple', style: TextStyle(color: Colors.white)),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Normal',
-                          child: Text('Normal', style: TextStyle(color: Colors.white)),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Complicated',
-                          child: Text('Complicated', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                      initialValue: ref.watch(difficultyProvider),
-                      onChanged: (value) {
-                        ref.read(difficultyProvider.notifier).state = value!;
-                      },
-                    ),
-                  ],
+
+                // ============ Form Area ===============
+                OptionForm(
+                  sectionTitleController: sectionTitleController,
+                  ref: ref,
                 ),
+
                 GestureDetector(
                   onTap: () async {
                     await createQuestions(context);

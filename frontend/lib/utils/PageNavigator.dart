@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void PageNavigator(BuildContext context, Widget newScreen) {
+void pageNavigator(BuildContext context, Widget newScreen) {
   Navigator.push(
       context,
       MaterialPageRoute(

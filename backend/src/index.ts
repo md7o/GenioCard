@@ -53,7 +53,7 @@ app.post(
         - Number of questions: ${numQuestions}
         - Language: ${language}
         - Difficulty: ${difficulty}
-        
+
         Input:
         ${pdfText}
         Output:
@@ -83,9 +83,8 @@ app.post(
 
       const questionsRef = firestore.collection("questions").doc();
       await questionsRef.set({
-        section: {
-          quest: questionsWithAnswers, // Questions nested under section
-        },
+        quest: questionsWithAnswers,
+
         sectionTitle: sectionTitle,
         numQuestions: numQuestions,
         language: language,
@@ -105,7 +104,14 @@ app.post(
   }
 );
 
+// export const api = functions.https.onRequest(app);
+
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
+
+// to update any update type in terminal "tsc"
+
+// to run index.ts file type in terminal "node dist/index.js"

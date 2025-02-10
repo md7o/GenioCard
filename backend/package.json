@@ -1,7 +1,6 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
@@ -16,6 +15,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.1",
     "@types/pdf-parse": "^1.1.4",
+    "@types/uuid": "^10.0.0",
     "genkit-cli": "^0.9.7",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
@@ -25,11 +25,14 @@
   "dependencies": {
     "@genkit-ai/googleai": "^0.9.7",
     "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase-admin": "^13.0.1",
+    "firebase-functions": "^6.2.0",
     "genkit": "^0.9.7",
     "multer": "^1.4.5-lts.1",
     "pdf-parse": "^1.1.1"
-  }
+  },
+  "description": ""
 }

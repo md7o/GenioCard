@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 
 class Header extends StatefulWidget {
-  const Header({super.key});
+  final void Function(String query) onSearch;
+
+  const Header({super.key, required this.onSearch});
 
   @override
   State<Header> createState() => _HeaderState();
@@ -42,9 +44,7 @@ class _HeaderState extends State<Header> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: BorderSide.none),
                 ),
-                onChanged: (value) {
-                  print(value);
-                },
+                onChanged: widget.onSearch,
               ),
             ),
           ),

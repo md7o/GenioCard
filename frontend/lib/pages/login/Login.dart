@@ -4,10 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:genio_card/pages/home/HomePage.dart';
 import 'package:genio_card/pages/login/signup.dart';
-import 'package:genio_card/pages/login/login_widgets/AuthTextField.dart';
 import 'package:genio_card/provider/UserNameProvider.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+
+import '../../components/form/AuthTextField.dart';
 
 class Login extends ConsumerStatefulWidget {
   const Login({super.key});

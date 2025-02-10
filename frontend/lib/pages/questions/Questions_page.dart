@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flip_card/controllers/flip_card_controllers.dart';
 import 'package:flutter_flip_card/flipcard/gesture_flip_card.dart';
-import 'package:flutter_flip_card/modal/flip_side.dart';
+import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:genio_card/theme/ThemeHelper.dart';
 
 class QuestionsPage extends StatelessWidget {
@@ -16,9 +16,15 @@ class QuestionsPage extends StatelessWidget {
     required this.numQuestions,
     required this.difficulty,
     required this.language,
-  });
+  }) {
+    print("Received Questions: $quesAndAnsw"); // Debug print
+    print("Received Num Questions: $numQuestions"); // Debug print
+    print("Received Language: $language"); // Debug print
+    print("Received Difficulty: $difficulty");
+  }
 
   final controller = FlipCardController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +80,7 @@ class QuestionsPage extends StatelessWidget {
                       style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context), fontSize: 17),
                     ),
                     Text(
-                      "Language: $difficulty",
+                      "Difficulty: $difficulty",
                       style: TextStyle(color: ThemeHelper.getSecondaryTextColor(context), fontSize: 17),
                     ),
                   ],
@@ -101,7 +107,6 @@ class QuestionsPage extends StatelessWidget {
                   child: GestureFlipCard(
                     animationDuration: const Duration(milliseconds: 300),
                     axis: FlipAxis.vertical,
-                    // controller: controller,
                     enableController: true,
                     frontWidget: Center(
                       child: Container(
