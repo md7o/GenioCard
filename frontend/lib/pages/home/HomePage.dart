@@ -137,7 +137,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             drawer: Drawer(
               backgroundColor: ThemeHelper.getBackgroundColor(context),
-              child: const Padding(padding: EdgeInsets.only(top: 50, bottom: 20), child: SideBar()),
+              child: const Padding(padding: EdgeInsets.only(top: 49, bottom: 20), child: SideBar()),
             ),
             body: allQuestions.isNotEmpty
                 ? Column(
